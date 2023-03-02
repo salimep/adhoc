@@ -1,0 +1,42 @@
+#!/usr/bin/python
+import sys
+import subprocess
+import shlex
+import os
+from datetime import datetime, timedelta
+def extract_ssl(ip,port):
+  cmd="echo 'Q'|openssl s_client -connect {}:{}|sed -n '/---BEGIN CERTIFICATE/,/---END CERTIFICATE/p' 1>/tmp/ce_1.txt".format(ip,port)
+  re=os.system(cmd)
+  read_cert="openssl x509 -in /tmp/ce_1.txt -noout -text"
+  grep_exp="grep  'Not After'"
+  sub_cmd=shlex.split(read_cert)
+  sub_cmd_2=shlex.split(grep_exp)
+  ## grep Expiry Date
+  ls_cert=subprocess.Popen(sub_cmd,stdout=subprocess.PIPE)
+  grep_cert = subprocess.Popen(sub_cmd_2,stdin=ls_cert.stdout,stdout=subprocess.PIPE)
+  ls_cert.stdout.close()
+  output,error = grep_cert.communicate()
+  exp_date=output.split()
+  mon,day,year=exp_date[3],exp_date[4],exp_date[6]
+  date = mon+' '+day+' '+year
+  return date
+
+## convert str to datetime object
+
+date_string=extract_ssl('XX.XX.XX.XX','636')
+date_object = datetime.strptime(date_string,'%b %d %Y')
+
+## Today date
+td_date= datetime.today()
+## two week after
+
+two_week= td_date + timedelta(days=14)
+if date_object < two_week and date_object > td_date:
+   print ("Cert is Going to expire with in two week current expiry  {}".format(date_object))
+   sys.exit(2)
+elif date_object > td_date:
+   print  ("Cert OK , Valid until {}".format(date_object))
+   sys.exit(0)
+else:
+  print ("Critical Cert is expired {}".format(date_object))
+  sys.exit(2)
