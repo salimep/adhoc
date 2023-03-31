@@ -1,0 +1,42 @@
+import re
+
+def replace_email(files,old_domian,new_domain):
+    pattern = r'\w+\@\w+.\w+$'
+    counter=0
+    old_email=[]
+    with open ('updated_email.txt', 'w') as f:
+        f.write('Name , Email\n')
+    with open(files,'r') as f:
+        for a in f:
+            a= a.strip('\n')
+            if a:
+                res= re.sub(old_domian,new_domain,a)
+                if res:
+                    with open('updated_email.txt','a') as f:
+                        f.writelines(res+'\n')
+
+
+import sys
+
+def extract_500_error(filename):
+    pattern = r' 500 \d+$'
+    my_list=[]
+    with open(filename,'r') as f:
+         for a in f.readlines()[-100:]:
+             if re.search(pattern,a.strip("\n")):
+                 pt=r'\]\s+"GET (/\w+.*\s+)HTTP'
+                 res= re.search(pt,a)
+                 if res:
+                     my_list.append (res.group (1))
+         f.close()
+    return my_list
+
+from datetime import datetime
+print (datetime.date(datetime.today()))
+res=extract_500_error('updated_email.txt')
+if res:
+     print ('CRITICAL 500 FOUND ON {}'.format(res))
+     sys.exit(2)
+else:
+    print ('OK no Error ')
+    sys.exit(0)
