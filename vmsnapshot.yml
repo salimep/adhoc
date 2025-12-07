@@ -6,7 +6,7 @@
     vcen_hostname: """
     vcn_username: """"
     vcn_password: ""
-    datacenter: "NICINT-DC"
+    datacenter: """"
     #vmname:  " {{ lookup ('file','vmnames.txt').split('\n')| select('match','.+') | list }}"
     vmname_0:  " {{ lookup ('file','vmnames.txt').split('\n') }}"
     days_to_keep: 90
