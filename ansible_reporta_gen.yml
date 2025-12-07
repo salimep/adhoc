@@ -1,0 +1,38 @@
+---
+- name: Single disk usage report using lineinfile (fixed)
+  hosts: all
+  serial: 1
+  gather_facts: false
+
+  tasks:
+    # - name: Ensure report file exists (create empty file)
+    #   delegate_to: localhost
+    #   run_once: true
+    #   local_action:
+    #     module: copy
+    #     content: ""
+    #     dest: /tmp/disk_usage_report.txt
+
+    - name: Get disk usage
+      command: df -h
+      register: disk_output
+
+    - name: Write disk usage to local file on control node
+    # delegate_to: localhost
+    # run_once: false
+      block:
+        - name: Append hostname as header
+          lineinfile:
+            path: /tmp/disk_report.txt
+            line: "==== Disk usage from {{ inventory_hostname }} ===="
+            insertafter: EOF
+            create: yes
+          delegate_to: localhost
+        - name: Append disk usage lines for {{ inventory_hostname }}
+          lineinfile:
+            path: /tmp/disk_report.txt
+            line: "{{ item }}"
+            insertafter: EOF
+            create: yes
+          loop: "{{ disk_output.stdout_lines }}"
+          delegate_to: localhost
