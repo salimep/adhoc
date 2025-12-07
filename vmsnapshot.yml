@@ -3,9 +3,9 @@
   hosts: localhost
   gather_facts: yes
   vars:
-    vcen_hostname: "appmvcen01e.nicint.gov.sa"
-    vcn_username: "ansible@vsphere.local"
-    vcn_password: "Sita@2018"
+    vcen_hostname: """
+    vcn_username: """"
+    vcn_password: ""
     datacenter: "NICINT-DC"
     #vmname:  " {{ lookup ('file','vmnames.txt').split('\n')| select('match','.+') | list }}"
     vmname_0:  " {{ lookup ('file','vmnames.txt').split('\n') }}"
