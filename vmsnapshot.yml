@@ -1,0 +1,100 @@
+---
+- name: snapshots on each vm
+  hosts: localhost
+  gather_facts: yes
+  vars:
+    vcen_hostname: "appmvcen01e.nicint.gov.sa"
+    vcn_username: "ansible@vsphere.local"
+    vcn_password: "Sita@2018"
+    datacenter: "NICINT-DC"
+    #vmname:  " {{ lookup ('file','vmnames.txt').split('\n')| select('match','.+') | list }}"
+    vmname_0:  " {{ lookup ('file','vmnames.txt').split('\n') }}"
+    days_to_keep: 90
+  tasks:
+  - name:  onemonth ago
+    set_fact:
+      one_month_ago: "{{ lookup('pipe','date -d \"1 month ago\"  +\"%Y-%m-%dT%H:%M:%S%z\"')}}"
+  - set_fact:
+      vmname: "{{ vmname_0.split()|list }}"
+  - debug:
+       msg: "{{ item }}"
+    loop: "{{ vmname }}"
+  - name: REGISTRETING VM INFO
+    vmware_guest_info:
+      hostname: "{{ vcen_hostname }}"
+      username: "{{ vcn_username }}"
+      password: "{{ vcn_password }}"
+      datacenter: "{{ datacenter }}"
+      validate_certs: false
+      name: "{{ item |replace(',', '')| replace(\"'\", '') | replace('[', '')|replace(']', '')}}"
+    loop: "{{ vmname }}"
+    register: vmdetails
+  - name:  print 
+    debug:
+      msg: 
+       - "{{ item.instance }}"
+    loop: "{{ vmdetails.results }}"
+    loop_control: 
+       label: "{{ item.item }}"
+      
+       
+  - name: gathering info on each VM
+    set_fact:
+      re_snap: >-
+        {{ re_snap | default([]) +
+          [ {'folder':item.instance.hw_folder,'datastore':item.instance.hw_datastores,'clustername':item.instance.hw_cluster,'vmpower': item.instance.hw_power_status, 'vmname': item.item, 'snapshot_name': item.instance.snapshots| map(attribute='name'),'creation_time': item.instance.snapshots| map(attribute='creation_time')|map('split','.')|map ('first')
+               }
+              ]
+        }}
+    loop: "{{ vmdetails.results }}"
+    loop_control:
+      label: "{{ item.item }}"
+  - name:  print vm which have two snapshots
+    debug:
+      msg: "{{((item.creation_time|first|trim) ~'Z')|to_datetime('%Y-%m-%dT%H:%M:%S%z')|type_debug}}"
+    when: item.snapshot_name|length >1
+    loop: "{{re_snap }}"
+  - name: print snaaaaaapp
+    debug:
+      var: one_month_ago
+  - name: delete snaps if it have more than 1 and  1 week old
+    vmware_guest_snapshot:
+      hostname: "{{ vcen_hostname }}"
+      username: "{{ vcn_username }}"
+      password: "{{ vcn_password }}"
+      datacenter: "{{ datacenter }}"
+      validate_certs: false
+      name: "{{ item.vmname }}"
+      snapshot_name: "{{ item.snapshot_name[0] }}" 
+      folder: "{{ item.folder[0] }}"
+      state: absent
+    delegate_to: localhost
+    loop: "{{re_snap}}"
+    when:
+      - item.snapshot_name|length > 1
+      - ((item.creation_time|first|trim) ~'Z')|to_datetime('%Y-%m-%dT%H:%M:%S%z') < one_month_ago|to_datetime('%Y-%m-%dT%H:%M:%S%z')
+      - delete is defined and delete |bool
+  - name: set snapshot name
+    set_fact:
+       set_sn_name: "{{lookup('pipe','date +%Y-%m-%d') }}-monthly-update"
+  - name:
+    debug:
+      var: set_sn_name
+  - name: create snapshots
+    vmware_guest_snapshot:
+      hostname: "{{ vcen_hostname }}"
+      username: "{{ vcn_username }}"
+      password: "{{ vcn_password }}"
+      datacenter: "{{ datacenter }}"
+      validate_certs: false
+      name: "{{ item.vmname }}"
+      snapshot_name: "{{ set_sn_name }}"
+      folder: "{{ item.folder }}"
+      state: present
+    delegate_to: localhost
+    loop: "{{re_snap}}"
+    when:
+      #- item.snapshot_name|length > 1
+      #- ((item.creation_time|first|trim) ~'Z')|to_datetime('%Y-%m-%dT%H:%M:%S%z') < one_month_ago|to_datetime('%Y-%m-%dT%H:%M:%S%z')
+      - create is defined and create |bool
+
