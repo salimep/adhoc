@@ -1,0 +1,136 @@
+
+
+##contrail controller
+------
+    nmcli connection add ifname eth0 con-name eth0 type ethernet  
+
+sudo nmcli connection modify eth0 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.8.20/24 \
+    ipv4.gateway 192.168.8.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+ nmcli connection add ifname eth1 con-name eth1 type ethernet  
+
+sudo nmcli connection modify eth1\
+    ipv4.method manual \
+    ipv4.addresses 192.168.10.20/24 \
+    ipv4.gateway 192.168.10.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+    
+
+## op-compute
+
+sudo nmcli connection modify ens192 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.8.30/24 \
+    ipv4.gateway 192.168.8.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+nmcli connection add ifname enp0s8 con-name enp0s8 type ethernet  
+
+sudo nmcli connection modify enp0s8\
+    ipv4.method manual \
+    ipv4.addresses 192.168.10.30/24 \
+    ipv4.gateway 192.168.10.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+## op deployer
+
+sudo nmcli connection modify ens192 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.8.153/24 \
+    ipv4.gateway 192.168.8.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+    sudo nmcli connection modify ens224 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.10.153/24 \
+    ipv4.gateway 192.168.10.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+
+contrail node -1( compute node)
+------
+
+nmcli connection add ifname enp0s8 con-name enp0s8 type ethernet  
+sudo nmcli connection modify enp0s3 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.8.30/24 \
+    ipv4.gateway 192.168.8.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+    sudo nmcli connection modify enp0s8 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.10.30/24 \
+    ipv4.gateway 192.168.10.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+### openstack controller
+
+
+sudo nmcli connection modify eth0 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.8.101/24 \
+    ipv4.gateway 192.168.8.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+nmcli connection add ifname eth1 con-name eth1 type ethernet  
+
+sudo nmcli connection modify eth1 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.10.101/24 \
+    ipv4.gateway 192.168.10.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+
+## OP Network
+nmcli connection add ifname eth1 con-name eth1 type ethernet  
+
+
+sudo nmcli connection modify eth0 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.8.102/24 \
+    ipv4.gateway 192.168.8.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+
+sudo nmcli connection modify eth1 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.10.102/24 \
+    ipv4.gateway 192.168.10.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+    sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+
+
+
+### OP-Compute2
+
+
+nmcli connection add ifname enp0s8 con-name enp0s8 type ethernet  
+sudo nmcli connection modify enp0s3 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.8.31/24 \
+    ipv4.gateway 192.168.8.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+    sudo nmcli connection modify enp0s8 \
+    ipv4.method manual \
+    ipv4.addresses 192.168.10.31/24 \
+    ipv4.gateway 192.168.10.1 \
+    ipv4.dns "8.8.8.8,8.8.4.4"
+
+
+    K8S_MASTER_IP=192.168.8.51; CONTRAIL_REPO="docker.io\/opencontrailnightly"; CONTRAIL_RELEASE="latest"; mkdir -pm 777 /var/lib/contrail/kafka-logs; curl https://raw.githubusercontent.com/Juniper/contrail-kubernetes-docs/master/install/kubernetes/templates/contrail-single-step-cni-install-ubuntu.yaml | sed "s/{{ K8S_MASTER_IP }}/$K8S_MASTER_IP/g; s/{{ CONTRAIL_REPO }}/$CONTRAIL_REPO/g; s/{{ CONTRAIL_RELEASE }}/$CONTRAIL_RELEASE/g" | kubectl apply -f -

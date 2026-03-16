@@ -1,0 +1,124 @@
+---
+- hosts: appmwmq01d:appmwmq02d
+  become: yes
+  vars:
+   - QMGR:
+       - DASDB
+       - AUDIT
+       - SAU_PROD
+       - PUSH
+       - APP_DAS
+       - TYPEB
+  tasks:
+   - name: check NFS status
+     wait_for:
+       host: appmnfs01d
+       port: 2049
+       timeout: 5
+     register: nfs_status
+     when: inventory_hostname  in ["appmwmq01d","appmwmq02d"]
+   - name: check /mqshare
+     stat:
+      path: /mqshare/qmgr/AUDIT
+     register: mount_point
+     when: inventory_hostname  in ["appmwmq01d","appmwmq02d"]
+   - block:
+      - name : check dasdb QMGR STATUS
+        shell: |
+                /opt/mqm/bin/dspmq -m DASDB |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+        register: dasdb
+      - set_fact:
+          #msg: "{{app.results.stdout| regex_search('\\((.*?)\\)','\\1') }}"
+          dasdb_status: "{{ dasdb.stdout_lines[0] |join('')|replace(')','')|replace('(','') }}"
+      - name : check TYPEB QMGR STATUS
+        shell: |
+                /opt/mqm/bin/dspmq -m TYPEB |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+        register: typeb
+        become: yes
+      - set_fact:
+          #msg: "{{app.results.stdout| regex_search('\\((.*?)\\)','\\1') }}"
+          typeb_status: "{{ typeb.stdout_lines[0] |join('')|replace(')','')|replace('(','')}}"
+      - name : check AUDIT QMGR STATUS
+        shell: |
+                /opt/mqm/bin/dspmq -m AUDIT |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+        register: audit
+      - set_fact:
+          #msg: "{{app.results.stdout| regex_search('\\((.*?)\\)','\\1') }}"
+          audit_status: "{{ audit.stdout_lines[0] |join('')|replace(')','')|replace('(','')}}"
+      - name : check APP QMGR STATUS
+        shell: |
+                /opt/mqm/bin/dspmq -m APP |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+        register: sauprod
+      - debug:
+          var: sauprod
+      - set_fact:
+          #msg: "{{app.results.stdout| regex_search('\\((.*?)\\)','\\1') }}"
+          sau_prod_status: "{{ sauprod.stdout_lines[0] |join('')|replace(')','')|replace('(','')}}"
+      - name : check APP_DAS QMGR STATUS
+        shell: |
+                /opt/mqm/bin/dspmq -m APP_DAS |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+        register: app_das
+      - set_fact:
+          #msg: "{{app.results.stdout| regex_search('\\((.*?)\\)','\\1') }}"
+          app_das_status: "{{ app_das.stdout_lines[0] |join('')|replace(')','')|replace('(','')}}"
+      - name : check DAS_IRISK QMGR STATUS
+        shell: |
+                /opt/mqm/bin/dspmq -m DAS_IRISK |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+        register: das_irisk
+      - set_fact:
+          #msg: "{{app.results.stdout| regex_search('\\((.*?)\\)','\\1') }}"
+          das_irisk_status: "{{ das_irisk.stdout_lines[0] |join('')|replace(')','')|replace('(','')}}"
+    when: inventory_hostname  in ["appmwmq01d","appmwmq02d"] and mount_point.stat.exists
+    become: yes
+   - name:  start DASDB QMGR
+     shell: |
+            sudo -u mqm /opt/mqm/bin/strmqm -x DASDB |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+     when: 
+      - dasdb_status != 'STATUSRunning'
+      - dasdb_status != 'standby'
+     register: hmm
+   - name:  start TYPEB QMGR
+     shell: |
+            sudo -u mqm /opt/mqm/bin/strmqm -x TYPEB |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+     when: 
+      - typeb_status != 'STATUSRunning'
+      - typeb_status != 'standby'
+     register: hmm
+   - debug:
+       var: typeb_status
+   - name:  start AUDIT QMGR
+     shell: |
+            sudo -u mqm /opt/mqm/bin/strmqm -x AUDIT |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+     when: 
+      - audit_status != 'STATUSRunning'
+      - audit_status != 'standby'
+     register: hmm
+   - debug:
+       var: audit_status
+   - name:  start APP_DAS QMGR
+     shell: |
+            sudo -u mqm /opt/mqm/bin/strmqm -x APP_DAS |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+     when: 
+      - app_das_status != 'STATUSRunning'
+      - app_das_status != 'standby'
+     register: hmm
+   - debug:
+       var: audit_status
+   - name:  start APP QMGR
+     shell: |
+            sudo -u mqm /opt/mqm/bin/strmqm -x APP |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+     when: 
+      - sau_prod_status != 'STATUSRunning'
+      - sau_prod_status != 'standby'
+     register: hmm
+   - debug:
+       var: sau_prod_status
+   - name:  start DAS_IRISK QMGR
+     shell: |
+            sudo -u mqm /opt/mqm/bin/strmqm -x DAS_IRISK |awk '{print $(NF)}'|awk  '{print $1}' 2> /dev/null
+     when: 
+      - das_irisk_status != 'STATUSRunning'
+      - das_irisk_status != 'standby'
+     register: hmm
+   - debug:
+       var: das_irisk_status

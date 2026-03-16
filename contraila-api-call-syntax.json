@@ -1,0 +1,287 @@
+g/contrail/control-control/contrail-control.log <==
+2026-02-27 Fri 06:34:36:869.173 +03  rocky9.localdomain [Thread 140344012289600, Pid 1]: BGP [SYS_NOTICE]: BgpPeerNotificationNoticeLog: Bgp Peer 192.168.10.20:179::192.168.10.1:59344 SEND Notification with Code 6 and SubCode 3 ( Cease:Administrator has unconfigured the peer ) controller/src/bgp/bgp_session.cc 106
+
+2026-02-27 Fri 06:34:37:876.055 +03  rocky9.localdomain [Thread 140344012289600, Pid 1]: BGP [SYS_NOTICE]: BgpPeerNotificationNoticeLog: Bgp Peer 192.168.10.20:179::192.168.10.1:59346 SEND Notification with Code 6 and SubCode 3 ( Cease:Administrator has unconfigured the peer ) controller/src/bgp/bgp_session.cc 106
+
+
+2026-02-27 Fri 06:34:38:882.105 +03  rocky9.localdomain [Thread 140343999694400, Pid 1]: BGP [SYS_NOTICE]: BgpPeerNotificationNoticeLog: Bgp Peer 192.168.10.20:179::192.168.10.1:59348 SEND Notification with Code 6 and SubCode 3 ( Cease:Administrator has unconfigured the peer ) controller/src/bgp/bgp_session.cc 106
+^C
+[root@rocky9 ~]# curl -u admin:gzbLLh3YOdGoRYQUvnJh7IDrEkszpZiCA7lzJJaJ \
+http://192.168.10.20:8082/virtual-networks | python3 -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  1047  100  1047    0     0   170k      0 --:--:-- --:--:-- --:--:--  170k
+{
+    "virtual-networks": [
+        {
+            "uuid": "d9c2246e-6aec-41ec-8b2c-1d432ddf1da0",
+            "fq_name": [
+                "default-domain",
+                "admin",
+                "overlay2"
+            ],
+            "href": "http://192.168.10.20:8082/virtual-network/d9c2246e-6aec-41ec-8b2c-1d432ddf1da0"
+        },
+        {
+            "uuid": "350d6538-5827-46fe-9220-c97c62f982a4",
+            "fq_name": [
+                "default-domain",
+                "default-project",
+                "__link_local__"
+            ],
+            "href": "http://192.168.10.20:8082/virtual-network/350d6538-5827-46fe-9220-c97c62f982a4"
+        },
+        {
+            "uuid": "a3421cbc-37ca-41c4-8839-e9cfaba263d9",
+            "fq_name": [
+                "default-domain",
+                "default-project",
+                "dci-network"
+            ],
+            "href": "http://192.168.10.20:8082/virtual-network/a3421cbc-37ca-41c4-8839-e9cfaba263d9"
+        },
+        {
+            "uuid": "e9a5ca5c-7af0-4884-b751-457dfd0b9008",
+            "fq_name": [
+                "default-domain",
+                "default-project",
+                "default-virtual-network"
+            ],
+            "href": "http://192.168.10.20:8082/virtual-network/e9a5ca5c-7af0-4884-b751-457dfd0b9008"
+        },
+        {
+            "uuid": "ff2b7bee-b52f-490e-bb0c-bc58bb11db8a",
+            "fq_name": [
+                "default-domain",
+                "default-project",
+                "ip-fabric"
+            ],
+            "href": "http://192.168.10.20:8082/virtual-network/ff2b7bee-b52f-490e-bb0c-bc58bb11db8a"
+        }
+    ]
+}
+[root@rocky9 ~]# curl -u admin:gzbLLh3YOdGoRYQUvnJh7IDrEkszpZiCA7lzJJaJ \
+http://192.168.10.20:8082/virtual-network/d9c2246e-6aec-41ec-8b2c-1d432ddf1da0 | python3 -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  3897  100  3897    0     0   271k      0 --:--:-- --:--:-- --:--:--  292k
+{
+    "virtual-network": {
+        "uuid": "d9c2246e-6aec-41ec-8b2c-1d432ddf1da0",
+        "name": "overlay2",
+        "network_ipam_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "default-project",
+                    "default-network-ipam"
+                ],
+                "attr": {
+                    "ipam_subnets": [
+                        {
+                            "subnet": {
+                                "ip_prefix": "30.30.30.0",
+                                "ip_prefix_len": 24
+                            },
+                            "dns_server_address": "30.30.30.2",
+                            "addr_from_start": true,
+                            "enable_dhcp": true,
+                            "default_gateway": "30.30.30.1",
+                            "subnet_name": "overlay",
+                            "subnet_uuid": "05fd688c-89ad-4d84-8e81-a00214fd6e6c",
+                            "dns_nameservers": [],
+                            "alloc_unit": 1,
+                            "created": "2026-02-26T08:37:10.810354",
+                            "last_modified": "2026-02-26T08:37:10.810354",
+                            "dhcp_relay_server": []
+                        }
+                    ]
+                },
+                "uuid": "4d448fc9-86f6-4634-b306-2e34b81563fa",
+                "href": "http://192.168.10.20:8082/network-ipam/4d448fc9-86f6-4634-b306-2e34b81563fa"
+            }
+        ],
+        "display_name": "overlay2",
+        "provider_properties": null,
+        "id_perms": {
+            "permissions": {
+                "owner": "cloud-admin",
+                "owner_access": 7,
+                "group": "cloud-admin-group",
+                "group_access": 7,
+                "other_access": 7
+            },
+            "uuid": {
+                "uuid_mslong": 15691144108371100140,
+                "uuid_lslong": 10028422644616863136
+            },
+            "enable": true,
+            "created": "2026-02-26T08:37:10.047864",
+            "last_modified": "2026-02-27T02:57:52.082904",
+            "description": "",
+            "user_visible": true,
+            "creator": null
+        },
+        "flood_unknown_unicast": false,
+        "fabric_snat": false,
+        "export_route_target_list": {},
+        "access_control_lists": [
+            {
+                "to": [
+                    "default-domain",
+                    "admin",
+                    "overlay2",
+                    "overlay2"
+                ],
+                "uuid": "06df07bb-f1a2-4961-9769-a84051f3148f",
+                "href": "http://192.168.10.20:8082/access-control-list/06df07bb-f1a2-4961-9769-a84051f3148f"
+            }
+        ],
+        "router_external": false,
+        "address_allocation_mode": "user-defined-subnet-only",
+        "multi_policy_service_chains_enabled": false,
+        "pbb_evpn_enable": false,
+        "pbb_etree_enable": false,
+        "is_shared": false,
+        "perms2": {
+            "owner": "61c3d42d5536487bb4ec66b417cb3888",
+            "owner_access": 7,
+            "global_access": 0,
+            "share": []
+        },
+        "ecmp_hashing_include_fields": {},
+        "parent_uuid": "61c3d42d-5536-487b-b4ec-66b417cb3888",
+        "instance_ip_back_refs": [
+            {
+                "to": [
+                    "2168f665-fac2-4e4e-84de-d55c40a9280b"
+                ],
+                "attr": null,
+                "uuid": "2168f665-fac2-4e4e-84de-d55c40a9280b",
+                "href": "http://192.168.10.20:8082/instance-ip/2168f665-fac2-4e4e-84de-d55c40a9280b"
+            },
+            {
+                "to": [
+                    "b8a69a10-8cd2-4946-958b-8a23d163c9ff"
+                ],
+                "attr": null,
+                "uuid": "b8a69a10-8cd2-4946-958b-8a23d163c9ff",
+                "href": "http://192.168.10.20:8082/instance-ip/b8a69a10-8cd2-4946-958b-8a23d163c9ff"
+            }
+        ],
+        "virtual_network_network_id": 5,
+        "mac_learning_enabled": false,
+        "import_route_target_list": {},
+        "routing_instances": [
+            {
+                "to": [
+                    "default-domain",
+                    "admin",
+                    "overlay2",
+                    "overlay2"
+                ],
+                "uuid": "d7eb182c-df27-4961-94b4-b2b9510513b2",
+                "href": "http://192.168.10.20:8082/routing-instance/d7eb182c-df27-4961-94b4-b2b9510513b2"
+            }
+        ],
+        "virtual_network_properties": {
+            "forwarding_mode": "l2_l3",
+            "allow_transit": true,
+            "rpf": "enable",
+            "mirror_destination": false
+        },
+        "mtu": 0,
+        "fq_name": [
+            "default-domain",
+            "admin",
+            "overlay2"
+        ],
+        "parent_type": "project",
+        "layer2_control_word": false,
+        "virtual_machine_interface_back_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "admin",
+                    "12487d71-a013-4ddc-8252-f51b21d5446a"
+                ],
+                "attr": null,
+                "uuid": "12487d71-a013-4ddc-8252-f51b21d5446a",
+                "href": "http://192.168.10.20:8082/virtual-machine-interface/12487d71-a013-4ddc-8252-f51b21d5446a"
+            },
+            {
+                "to": [
+                    "default-domain",
+                    "admin",
+                    "2e399aec-8105-4c20-a82a-9f1e9e26d476"
+                ],
+                "attr": null,
+                "uuid": "2e399aec-8105-4c20-a82a-9f1e9e26d476",
+                "href": "http://192.168.10.20:8082/virtual-machine-interface/2e399aec-8105-4c20-a82a-9f1e9e26d476"
+            }
+        ],
+        "virtual_network_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "default-project",
+                    "ip-fabric"
+                ],
+                "attr": null,
+                "uuid": "ff2b7bee-b52f-490e-bb0c-bc58bb11db8a",
+                "href": "http://192.168.10.20:8082/virtual-network/ff2b7bee-b52f-490e-bb0c-bc58bb11db8a"
+            }
+        ],
+        "port_security_enabled": true,
+        "route_target_list": {},
+        "href": "http://192.168.10.20:8082/virtual-network/d9c2246e-6aec-41ec-8b2c-1d432ddf1da0",
+        "parent_href": "http://192.168.10.20:8082/project/61c3d42d-5536-487b-b4ec-66b417cb3888"
+    }
+}
+[root@rocky9 ~]# curl -X PUT -u admin:gzbLLh3YOdGoRYQUvnJh7IDrEkszpZiCA7lzJJaJ \
+-H "Content-Type: application/json" \
+-d '{
+    "virtual-network": {
+        "uuid": "d9c2246e-6aec-41ec-8b2c-1d432ddf1da0",
+        "virtual_network_network_id": 2000,
+        "virtual_network_properties": {
+            "vxlan_network_identifier": 2000
+        }
+    }
+}' \
+http://192.168.10.20:8082/virtual-network/d9c2246e-6aec-41ec-8b2c-1d432ddf1da0
+Cannot update the virtual network ID[root@rocky9 ~]# 
+[root@rocky9 ~]# root@rocky9 ~]# curl -X PUT -u admin:gzbLLh3YOdGoRYQUvnJh7IDrEkszpZiCA7lzJJaJ \
+-H "Content-Type: application/json" \
+-d '{
+    "virtual-network": {
+        "uuid": "d9c2246e-6aec-41ec-8b2c-1d432ddf1da0",
+        "virtual_network_network_id": 2000,
+        "virtual_network_properties": {
+            "vxlan_network_identifier": 2000
+        }
+    }
+}' \
+http://192.168.10.20:8082/virtual-network/d9c2246e-6aec-41ec-8b2c-1d432ddf1da0
+Cannot update the virtual network ID[root@rocky9 ~]# 
+[root@rocky9 ~]# 
+-bash: root@rocky9: command not found
+-bash: Cannot: command not found
+-bash: [root@rocky9: command not found
+[root@rocky9 ~]# 
+[root@rocky9 ~]# 
+[root@rocky9 ~]# curl -X PUT -u admin:gzbLLh3YOdGoRYQUvnJh7IDrEkszpZiCA7lzJJaJ \
+-H "Content-Type: application/json" \
+-d '{
+    "virtual-network": {
+        "uuid": "d9c2246e-6aec-41ec-8b2c-1d432ddf1da0",
+        "virtual_network_properties": {
+            "vxlan_network_identifier": 2000
+        }
+    }
+}' \
+http://192.168.10.20:8082/virtual-network/d9c2246e-6aec-41ec-8b2c-1d432ddf1da0
+{"virtual-network": {"uuid": "d9c2246e-6aec-41ec-8b2c-1d432ddf1da0", "href": "http://192.168.10.20:8082/virtual-network/d9c2246e-6aec-41ec-8b2c-1d432ddf1da0"}}[root@rocky9 ~]# 
+[root@rocky9 ~]# 
+[root@rocky9 ~]# 
+[root@rocky9 ~]# 
