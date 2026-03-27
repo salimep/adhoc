@@ -134,3 +134,129 @@ sudo nmcli connection modify enp0s3 \
 
 
     K8S_MASTER_IP=192.168.8.51; CONTRAIL_REPO="docker.io\/opencontrailnightly"; CONTRAIL_RELEASE="latest"; mkdir -pm 777 /var/lib/contrail/kafka-logs; curl https://raw.githubusercontent.com/Juniper/contrail-kubernetes-docs/master/install/kubernetes/templates/contrail-single-step-cni-install-ubuntu.yaml | sed "s/{{ K8S_MASTER_IP }}/$K8S_MASTER_IP/g; s/{{ CONTRAIL_REPO }}/$CONTRAIL_REPO/g; s/{{ CONTRAIL_RELEASE }}/$CONTRAIL_RELEASE/g" | kubectl apply -f -
+
+
+nmcli connection add type ethernet con-name eth0-static ifname eth0 ipv4.addresses 192.168.8.30/24 ipv4.gateway 192.168.8.1 ipv4.method manual
+
+
+
+nmcli connection add type ethernet ifname vhost0 con-name vhost0 ipv4.method manual ipv4.addresses 192.168.10.40/24 ipv4.gateway 192.168.10.1 ipv4.dns "8.8.8.8 8.8.4.4" \
+
+  connection.autoconnect yes
+
+
+  mac@MaCs-MacBook-Pro ~ % ssh -o KexAlgorithms=+diffie-hellman-group14-sha1 -o HostKeyAlgorithms=+ssh-rsa admin@192.168.10.1
+The authenticity of host '192.168.10.1 (192.168.10.1)' can't be established.
+RSA key fingerprint is SHA256:54wn4E4lanRPg8SjKrQp4QjZbWlGSAzUHHHXuMrcK0w.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '192.168.10.1' (RSA) to the list of known hosts.
+(admin@192.168.10.1) Password: 
+
+CSR100#
+CSR100#
+CSR100#
+
+
+
+[root@op-deployer ~]# grep admin /etc/kolla/passwords.yml 2
+grafana_admin_password: sW3yoJf9s98EEamosbqk3Gm9brLsNPagStzGKWyw
+heat_domain_admin_password: PaGM54WmQe89YR3Qozouou55jkbT4tP4Nh09aIJW
+infoblox_admin_password: lsOaMjJhQZ2PklPDm6cXyomTupSIPxS6iLjKAasA
+keystone_admin_password: gzbLLh3YOdGoRYQUvnJh7IDrEkszpZiCA7lzJJaJ
+proxysql_admin_password: e1vmTfXzHTHw1V7yywvTOcOShJYW9RxDDPZblI3R
+[root@op-deployer ~]# 
+
+
+
+lb1.salimonline.local#sh run | sec vrf definition admin
+vrf definition admin
+ rd 64512:10002
+ vnid 10002
+ !
+ address-family ipv4
+  no route-target export 64512:10002
+  no route-target export 64512:8000007
+  no route-target import 64512:10002
+  no route-target import 64512:8000007
+  no route-target import 64512:8000002
+  no route-target import 64512:8000003
+  route-target export 64512:10002 stitching
+  route-target import 64512:8000007 stitching
+  route-target import 64512:10002 stitching
+ exit-address-family
+lb1.salimonline.local#
+
+
+address-family ipv4
+  route-target export 64512:10002 stitching
+  route-target import 64512:2002 stitching
+  route-target export 64512:8000005 stitching
+  
+ exit-address-family
+
+
+### Adding VRF   steps #####
+
+juniper vmx
+--
+
+set routing-instances company-B instance-type vrf
+set routing-instances company-B interface lo0.200
+set routing-instances company-B route-distinguisher 64512:30001
+set routing-instances company-B vrf-target target:64512:30001
+set routing-instances company-B vrf-table-label
+
+
+set interfaces lo0 unit 200 family inet address 88.88.88.1/32
+
+# Update your existing policy
+set policy-options policy-statement EXPORT-LAN term 3 from instance company-B
+set policy-options policy-statement EXPORT-LAN term 3 from protocol direct
+set policy-options policy-statement EXPORT-LAN term 3 then accept
+
+PE-CE-1 side
+
+---
+ip vrf company-B
+ rd 64512:30001
+ route-target export 64512:30001
+ route-target import 64512:30001
+ 
+
+BGP CONFIG CHANGE 
+
+address-family ipv4 vrf company-B
+  redistribute connected
+  redistribute static
+
+
+PE-CE-2 side
+
+---
+ip vrf company-B
+ rd 64512:30001
+ route-target export 64512:30001
+ route-target import 64512:30001
+ 
+
+BGP CONFIG CHANGE 
+
+ address-family ipv4 vrf company-B
+  network 0.0.0.0
+  redistribute connected
+  redistribute static
+  neighbor 55.55.55.2 remote-as 301
+  neighbor 55.55.55.2 activate
+ exit-address-family
+
+
+Customer END router
+----
+
+router bgp 301
+ neighbor 55.55.55.1 remote-as 100
+ address-family ipv4
+  redistribute connected
+  neighbor 55.55.55.1 activate
+ exit-address-family
