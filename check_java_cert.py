@@ -3,7 +3,7 @@
 import subprocess
 from datetime import datetime
 import sys
-CRTICAL=2
+CRITICAL=2
 OK=0
 WARNING=1
 UNKNOWN=3
@@ -14,7 +14,7 @@ def extract_cert(ALIAS,KEYSTORE,PASS):
     stdout, stderr = process.communicate()
     if not stdout:   # check output empty or not
         print ("no {} certificate found in the {} keystore ".format(ALIAS,KEYSTORE))
-        sys.exit(CRTICAL)
+        sys.exit(CRITICAL)
     clean = stdout[:20] + ' '+stdout[24:].strip().lstrip() ## clean the output to convert date object Mon Dec 31 03:00:00 AST 2040
     dt_obj = datetime.strptime(clean, " %a %b %d %H:%M:%S %Y")
     return dt_obj
