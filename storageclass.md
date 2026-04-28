@@ -1,4 +1,4 @@
-# setup MYSQL cluster on kubernetes
+# Setup MYSQL cluster on kubernetes
 
 ### setup iscsi block storage using TrueNAS(democratic-csi)
 
@@ -141,3 +141,8 @@ spec:
   ipAddressPools:
   - first-pool
 
+kubectl apply -f lb-met-con.yml 
+````
+check logs and error and status
+
+```
