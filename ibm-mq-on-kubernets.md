@@ -1,4 +1,4 @@
-# installing IBM MQ-HA on Kubernetes cluster
+# installing IBM MQ-HA on k8s cluster
 
 # pre-requests
 - nfs storageclass (i have configured storage using democratic-csi with TrueNas)
