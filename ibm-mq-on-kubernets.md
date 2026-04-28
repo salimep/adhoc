@@ -139,82 +139,59 @@ route:
     mqtraffic: false
 
 tolerations: []
-~                     
+~             
 ```
 install the ibm mq using helm
 
-Make sure below secret and configmap created  before you install it
 
 ```
-[vagrant@kube-master ~]$ k get cm/mq-production-config
-NAME                   DATA   AGE
-mq-production-config   1      41h
-[vagrant@kube-master ~]$ k get cm/mq-production-config -o yaml|kubectl-neat 
-apiVersion: v1
-data:
-  config.mqsc: "DEFINE QLOCAL(MY.QUEUE) REPLACE\nDEFINE CHANNEL(MY.SVRCONN) CHLTYPE(SVRCONN)
-    TRPTYPE(TCP) REPLACE\nSET CHLAUTH(MY.SVRCONN) TYPE(BLOCKUSER) USERLIST(nobody)\nALTER
-    AUTHINFO(SYSTEM.DEFAULT.AUTH.INFO.IDPWOS) AUTHTYPE(IDPWOS) CHCKCLNT(REQUIRED)\nREFRESH
-    SECURITY TYPE(CONNAUTH)\nREFRESH SECURITY TYPE(SSL) \n"
-kind: ConfigMap
-metadata:
-  name: mq-production-config
-  namespace: ibm-mq
-[vagrant@kube-master ~]$ vim mq.yml
+helm install ibm-mq-prod ibm-mq/ibm-mq   -f mq-availibilty.yml -n ibm-mq
+```
+verification part
+```
 [vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ k get secret
-NAME                                TYPE                 DATA   AGE
-mq-ssl-kydb                         Opaque               3      39h
-mq-ssl-secret                       Opaque               3      41h
-my-cluster-secrets                  Opaque               1      41h
-prodqm1-ssl-secret                  kubernetes.io/tls    3      36h
-sh.helm.release.v1.ibm-mq-prod.v1   helm.sh/release.v1   1      35h
-[vagrant@kube-master ~]$ k get secret/prodqm1-ssl-secret -o yaml|kubectl-neat 
-apiVersion: v1
-data:
-  ca.crt: LS0tLS1CRUdJTiBDRVbknWmFQY0JmRUxSaXg23KR1JkY3FhWllSRmhZCmxKdXZUVG9KdVZTeldVOVhiNmlNCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
-  tls.crt: LS0tLS1CRUs5U3p2WnN1Q1UvK2dDaWgKRlMVp1FekhWNkVoM3p1NWxtdzd0enlZSVN1MkEyODc3OG9jPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
-  tls.key: LrNlhBZTZueFFSVExyUGdWw1UmxvKytseGNBRXpCYlEvSkQKT3l1eXNQTkVsRmFBbTlwa0tkMVpQV3dYYXc9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==
-kind: Secret
-metadata:
-  name: prodqm1-ssl-secret
-  namespace: ibm-mq
-type: kubernetes.io/tls
+[vagrant@kube-master ~]$ k get pod -o wide
+NAME           READY   STATUS    RESTARTS      AGE     IP               NODE                            NOMINATED NODE   READINESS GATES
+qm2-ibm-mq-0   0/1     Running   6 (27m ago)   5d      10.244.182.43    worker3                         <none>           <none>
+qm2-ibm-mq-1   0/1     Running   0             2m13s   10.244.226.116   worker-1                        <none>           <none>
+qm2-ibm-mq-2   1/1     Running   5 (27m ago)   5d      10.244.123.1     kube-master.salimonline.local   <none>           <none>
+[vagrant@kube-master ~]$ k exec qm2-ibm-mq-2  -- bash -c dspmq
+QMNAME(PRODQM02)                                          STATUS(Running)
+[vagrant@kube-master ~]$ k exec qm2-ibm-mq-1  -- bash -c dspmq
+QMNAME(PRODQM02)                                          STATUS(Replica)
+[vagrant@kube-master ~]$ k exec qm2-ibm-mq-0  -- bash -c dspmq
+QMNAME(PRODQM02)                                          STATUS(Replica)
+[vagrant@kube-master ~]$ k get svc
+NAME                          TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                         AGE
+qm2-ibm-mq                    LoadBalancer   10.109.114.214   192.168.8.243   9443:30606/TCP,1414:30102/TCP   5d
+qm2-ibm-mq-metrics            ClusterIP      10.104.230.71    <none>          9157/TCP                        5d
+qm2-ibm-mq-metrics-headless   ClusterIP      None             <none>          9157/TCP                        47h
+qm2-ibm-mq-replica-0          ClusterIP      10.110.59.214    <none>          9414/TCP                        5d
+qm2-ibm-mq-replica-1          ClusterIP      10.99.40.17      <none>          9414/TCP                        5d
+qm2-ibm-mq-replica-2          ClusterIP      10.97.160.184    <none>          9414/TCP                        5d
+qm2-mq-metrics                ClusterIP      10.96.77.3       <none>          9157/TCP                        4d9h
+[vagrant@kube-master ~]$ k get eo
+error: the server doesn't have a resource type "eo"
+[vagrant@kube-master ~]$ k get ep
+NAME                          ENDPOINTS                                                  AGE
+qm2-ibm-mq                    10.244.123.1:9443,10.244.123.1:1414                        5d
+qm2-ibm-mq-metrics            10.244.123.1:9157                                          5d
+qm2-ibm-mq-metrics-headless   10.244.123.1:9157,10.244.182.43:9157,10.244.226.116:9157   47h
+qm2-ibm-mq-replica-0          10.244.182.43:9414                                         5d
+qm2-ibm-mq-replica-1          10.244.226.116:9414                                        5d
+qm2-ibm-mq-replica-2          10.244.123.1:9414                                          5d
+qm2-mq-metrics                10.244.123.1:9157                                          4d9h
 [vagrant@kube-master ~]$ 
 
+[vagrant@kube-master ~]$  helm list -A
+NAME         	NAMESPACE     	REVISION	UPDATED                                	STATUS  	CHART                	APP VERSION
+freenas-iscsi	democratic-csi	3       	2026-04-13 21:33:55.046516065 +0300 +03	deployed	democratic-csi-0.15.1	1.0        
+my-grafana   	monitoring    	3       	2026-04-26 11:19:25.159220339 +0300 +03	deployed	grafana-10.5.15      	12.3.1     
+prometheus   	monitoring    	2       	2026-04-26 11:52:41.483417577 +0300 +03	deployed	prometheus-29.2.1    	v3.11.2    
+qm2          	ibm-mq        	1       	2026-04-23 17:46:30.675677489 +0300 +03	deployed	ibm-mq-12.0.1        	9.4.2.0    
+zfs-nfs      	democratic-csi	3       	2026-04-12 18:27:29.492336532 +0000 UTC	deployed	democratic-csi-0.15.1	1.0        
+[vagrant@kube-master ~]$ 
 
 ```
-install it on  k8s cluster
 
-```
-helm install ibm-mq-prod ibm-mq/ibm-mq   -f mq.yml   --namespace ibm-mq
-```
 
-ant@kube-master ~]$ 
-[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ k get po
-NAME            READY   STATUS    RESTARTS        AGE
-ibm-mq-prod-0   1/1     Running   3 (3h46m ago)   35h
-[vagrant@kube-master ~]$ k get po/ibm-mq-prod-0 -o jsonpath='{.spec.containers[*].name}'
-qmgr[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ k get po/ibm-mq-prod-0 -o jsonpath='{.spec.containers[*].name}'
-qmgr[vagrant@kube-master k get po/ibm-mq-prod-0 -o jsonpath='{.spec.initContainers[*].name}'
-qmgr-init[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ k exec -it ibm-mq-prod-0 -- bash
-Defaulted container "qmgr" out of: qmgr, qmgr-init (init)
-bash-5.1$ dspmq  
-QMNAME(PRODQM1)                                           STATUS(Running)
-bash-5.1$ ps -ef |grep TCP
-888          928     791  0 03:47 ?        00:00:01 /opt/mqm/bin/runmqlsr -r -m PRODQM1 -t TCP -p 1414
-888        41405   41354  0 06:26 pts/0    00:00:00 grep TCP
-bash-5.1$ exit
-exit
-[vagrant@kube-master ~]$ 
-[vagrant@kube-master ~]$ k logs ibm-mq-prod-0 -c qmgr -f
-
-```
