@@ -1,4 +1,4 @@
-# installig IBM MQ-HA on Kubernetes cluster
+# installing IBM MQ-HA on Kubernetes cluster
 
 # pre-requests
 - nfs storageclass (i have configured storage using democratic-csi with TrueNas)
@@ -12,7 +12,7 @@ update
 ```
 helm repo update
 ```
-extract  varibile which we can define during the installer
+extract  variable which we can define during the installer
 ```
 helm show values ibm-mq/ibm-mq > mq-val.yml
 ```
