@@ -14,11 +14,13 @@ data:
     demo.attempt=10
     regsitred.attempt=1000
     ## Added project secret 
-    secret.json.path=file:/etc/myapp/json.secret/secret.json
+    secret.json.path=file:${SECRET_JSON_PATH}
+    
     # Spring Data Redis Configuration
     spring.data.redis.host=redis
     spring.data.redis.port=6379
     spring.data.redis.timeout=6000ms
+    
 
     # JPA / Hibernate Configuration
     spring.jpa.show-sql=true
