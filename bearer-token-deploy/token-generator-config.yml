@@ -32,8 +32,7 @@ data:
     ad.url=ldap://192.168.8.142:389
     ad.root-dn=DC=salimonline,DC=in
 
-    # JWT Security Configuration
-    jwt.secret=hhZAf4BqK4KEMnFI+mLQ8LZC6MsW0temws5oVxoBckA=
+    
 
     # Logging Configuration
     logging.level.root=INFO
