@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: token-app
+  name: token-generator
+  labels:
+    app: token-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: token-generator
+  template:
+    metadata:
+      labels:
+        app: token-generator
+    spec:
+      containers:
+      - name: token-generator
+        image: docker.io/salimep/token-generator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        # Direct Spring Boot to load configuration from /etc/myapp/application.properties
+        - name: SPRING_CONFIG_IMPORT
+          value: "optional:file:/etc/myapp/application.properties"
+        - name: JAVA_OPTS
+          value: "-Xms256m -Xmx512m"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+        volumeMounts:
+        ## secret.json config
+        - name: secret-volume
+          mountPath: /etc/myapp/json.secret
+          subPath: secret.json
+          readOnly: true
+ 
+        # Mount the single file application.properties into /etc/myapp/
+        - name: config-volume
+          mountPath: /etc/myapp/application.properties
+          subPath: application.properties
+          readOnly: true
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: app-secret-config
+      - name: config-volume
+        configMap:
+          name: token-generator-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: token-generator
+  labels:
+    app: token-generator
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 9090
+    name: http
+  selector:
+    app: token-generator
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: docker.io/library/redis:7-alpine
+        ports:
+        - containerPort: 6379
+          name: redis
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  selector:
+    app: redis
