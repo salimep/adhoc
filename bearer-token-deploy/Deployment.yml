@@ -23,6 +23,8 @@ spec:
         - containerPort: 8080
           name: http
         env:
+        - name: SECRET_JSON_PATH
+          value: /etc/myapp/secret.json
         # Direct Spring Boot to load configuration from /etc/myapp/application.properties
         - name: SPRING_CONFIG_IMPORT
           value: "optional:file:/etc/myapp/application.properties"
