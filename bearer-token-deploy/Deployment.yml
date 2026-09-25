@@ -38,7 +38,7 @@ spec:
         volumeMounts:
         ## secret.json config
         - name: secret-volume
-          mountPath: /etc/myapp/json.secret
+          mountPath: /etc/myapp/secret.json
           subPath: secret.json
           readOnly: true
  
